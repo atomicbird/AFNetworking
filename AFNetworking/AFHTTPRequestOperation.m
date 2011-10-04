@@ -110,6 +110,8 @@ static inline BOOL AFHTTPOperationStateTransitionIsValid(AFHTTPOperationState fr
 @synthesize uploadProgress = _uploadProgress;
 @synthesize downloadProgress = _downloadProgress;
 @synthesize completion = _completion;
+@synthesize acceptSelfSignedCertificates = _acceptSelfSignedCertificates;
+@synthesize acceptSelfSignedCertificatesFromHosts = _acceptSelfSignedCertificatesFromHosts;
 
 static NSThread *_networkRequestThread = nil;
 
@@ -242,6 +244,24 @@ static NSThread *_networkRequestThread = nil;
     if ([self isCancelled]) {
         self.state = AFHTTPOperationFinishedState;
     }
+}
+
+- (void)setAcceptSelfSignedCertificates:(BOOL)flag
+{
+	_acceptSelfSignedCertificates = flag;
+	if (flag) {
+		// Setting the flag to YES implies trusting self-signed certs from everyone.
+		[_acceptSelfSignedCertificatesFromHosts release];
+		_acceptSelfSignedCertificatesFromHosts = nil;
+	}
+}
+
+- (void)setAcceptSelfSignedCertificatesFromHosts:(NSArray *)hosts
+{
+	[_acceptSelfSignedCertificatesFromHosts release];
+	_acceptSelfSignedCertificatesFromHosts = [hosts copy];
+	// Set the flag to NO to turn off accept-from-all behavior, limiting access to only the host list.
+	[self setAcceptSelfSignedCertificates:NO];
 }
 
 - (NSString *)responseString {
@@ -377,6 +397,24 @@ didReceiveResponse:(NSURLResponse *)response
     }
     
     [self finish];
+}
+
+- (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
+    if (([self acceptSelfSignedCertificates]) || ([[self acceptSelfSignedCertificatesFromHosts] count] > 0)) {
+        return [[protectionSpace authenticationMethod] isEqualToString:NSURLAuthenticationMethodServerTrust];
+    } else {
+        return NO;
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+	if (([self acceptSelfSignedCertificates]) || ([[self acceptSelfSignedCertificatesFromHosts] containsObject:[[challenge protectionSpace] host]])) {
+		if ([[[challenge protectionSpace] authenticationMethod] isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+			[[challenge sender] useCredential:[NSURLCredential credentialForTrust:[[challenge protectionSpace] serverTrust]] forAuthenticationChallenge:challenge];
+		} else {
+			[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+		}
+	}
 }
 
 - (void)connection:(NSURLConnection *)__unused connection 

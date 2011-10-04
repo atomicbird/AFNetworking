@@ -148,4 +148,21 @@ extern NSString * const AFHTTPOperationDidFinishNotification;
  */
 - (void)setDownloadProgressBlock:(void (^)(NSInteger bytesRead, NSInteger totalBytesRead, NSInteger totalBytesExpectedToRead))block;
 
+///-----------------------------------
+/// @name Accept unsigned certificates
+///-----------------------------------
+
+/**
+ Enables accepting self-signed SSL certificates from all hosts.
+ 
+ If acceptSelfSignedCertificates is set to YES, all self-signed certificates will be accepted. Setting this to YES also releases any host list saved in acceptSelfSignedCertificatesFromHosts.
+ */
+@property (nonatomic, assign) BOOL acceptSelfSignedCertificates;
+/**
+ Enables accepting self-signed SSL certificates from specific hosts.
+ 
+ If acceptSelfSignedCertificatesFromHosts is not nil, self-signed certificates are accepted from hostnames contained in the array. Setting acceptSelfSignedCertificatesFromHosts to non-nil will set acceptSelfSignedCertificatesFromHosts to NO to prevent accepting certificates from non-listed hosts.
+ */
+@property (nonatomic, copy) NSArray *acceptSelfSignedCertificatesFromHosts;
+
 @end
