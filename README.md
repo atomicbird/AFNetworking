@@ -13,6 +13,13 @@ To install the API docset directly into your local Xcode organizer, first [insta
 
 If you're looking for something more human-friendly, or more conceptual in nature, be sure to [check out the Wiki](https://github.com/AFNetworking/AFNetworking/wiki). 
 
+## Notes on this fork
+
+This fork of AFNetworking makes the following changes:
+
+* Adds the option of accepting self-signed HTTPS certificates.
+* Deletes references to JSONKit, using only NSJSONSerialization. _This means that iOS 5+ is required._
+
 ## Example Projects
 
 Be sure to download and run the example projects for iOS and Mac. Both example projects serve as models of how one might integrate AFNetworking into their own project.
